@@ -12,7 +12,7 @@ bool Carte::LoadFile(String path)
   ReadHeader();
   for(unsigned int i = 0;i < 32 ;i++)
   {
-    ReadLine();
+    ReadLine(i);
   }
   return true;
 }
@@ -41,35 +41,42 @@ bool Carte::WriteData()
   ///Effacement des données présentes sur le bus d'adresse
   return true;
 }
-bool Carte::ReadLine()
+
+
+bool Carte::SetStep(unsigned int  Step)
+{
+  m_Step = (Step - 1)%m_nbStep;
+  m_timeLeft = 0;
+    
+}
+
+bool Carte::ReadLine(unsigned int NStep)
 {
   ///Sauvegarde d'une ligne de data et du temps du step
 
     char ret;
-   for (unsigned int NumStep = 0 ; NumStep < m_nbStep; NumStep++)
-   {
-        unsigned int data = 0;
-       ////Lecture des binaires
-      for (unsigned int i = 0; i < 8; i++)
+
+      unsigned int data = 0;
+     ////Lecture des binaires
+    for (unsigned int i = 0; i < 8; i++)
+    {
+      ret = m_file.read();
+      if(ret == '1')
       {
-        ret = m_file.read();
-        if(ret == '1')
-        {
-          data |= 0x1;
-          data = data <<1;
-        }
+        data |= 0x1;
+        data = data <<1;
       }
-      m_dataSteps[NumStep] = data;
+    }
+    m_dataSteps[NStep] = data;
+  
     
-      
-      String sTimeStep = "";
-      do
-      {
-        ret = m_file.read();
-        sTimeStep += ret; 
-      } while(ret != '\n');
-      m_timeSteps[NumStep] = sTimeStep.toInt();
-   }
+    String sTimeStep = "";
+    do
+    {
+      ret = m_file.read();
+      sTimeStep += ret; 
+    } while(ret != '\n');
+    m_timeSteps[NStep] = sTimeStep.toInt();
       
   return true;
 }

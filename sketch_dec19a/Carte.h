@@ -16,9 +16,7 @@ class Carte
     void SetNumCarte(unsigned int auinNumCarte){m_uiNumCarte = auinNumCarte;};
     bool LoadFile(String path);
     bool Execute();
-    bool WriteData();
-    bool ReadLine();
-    bool ReadHeader();
+    bool SetStep(unsigned int  Step);
 
    
   private:
@@ -26,10 +24,14 @@ class Carte
     unsigned int m_uiNumCarte;
     unsigned int m_uiAdresse;
     unsigned int m_Step;
-    unsigned int m_timeLeft;
+    int m_timeLeft;
     unsigned int m_nbStep;
     unsigned int m_dataSteps[32];
     unsigned int m_timeSteps[32];    
+    
+    bool WriteData();
+    bool ReadHeader();
+    bool ReadLine(unsigned int NStep);
     
 };
 #endif
