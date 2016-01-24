@@ -3,7 +3,8 @@
 
 #ifndef CARTE_H
 #define CARTE_H
-
+#define MAX_STEP      400
+#define MAX_STEP_LOAD 16 
 
 
 class Carte
@@ -12,26 +13,35 @@ class Carte
 
     Carte();
     ~Carte();
-    void SetAdresse( unsigned int auiAdresse){ m_uiAdresse = auiAdresse;};
-    void SetNumCarte(unsigned int auinNumCarte){m_uiNumCarte = auinNumCarte;};
+    void SetAdresse(char auiAdresse){ m_uiAdresse = auiAdresse;};
+    void SetNumCarte(short auinNumCarte){m_uiNumCarte = auinNumCarte;};
     bool LoadFile(String path);
     bool Execute();
     bool SetStep(unsigned int  Step);
 
+    bool LoadBuffer();
    
   private:
     File m_file;
-    unsigned int m_uiNumCarte;
-    unsigned int m_uiAdresse;
-    unsigned int m_Step;
-    int m_timeLeft;
+    short m_uiNumCarte;
+    char m_uiAdresse;
+    short m_Step;
+
+    unsigned int m_dataposition;
+    unsigned int m_timeLeft;
     unsigned int m_nbStep;
-    unsigned int m_dataSteps[32];
-    unsigned int m_timeSteps[32];    
     
+    char m_dataSteps[MAX_STEP_LOAD];
+    unsigned int m_timeSteps[MAX_STEP_LOAD]; 
+
+       
+    unsigned int m_indexStep;
     bool WriteData();
     bool ReadHeader();
     bool ReadLine(unsigned int NStep);
     
 };
 #endif
+
+
+
