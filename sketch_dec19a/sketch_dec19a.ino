@@ -2,22 +2,37 @@
 #include <SPI.h>
 #include <SD.h>
 #include "Machine.h"
+#include "Commande.h"
+
 // set up variables using the SD utility library functions:
 Sd2Card card;
 SdVolume volume;
 SdFile root;
-#define DELAY_MS 60
+#define FREQ 16
 #define CSPIN 53
 Machine Malette;
+#define COUNTVALUE 62500/FREQ 
+
+
+boolean stringComplete = false;  // whether the string is complete
+
+String inputString= "" ;
+
+
 void setup() 
 {
  
     // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
+  Serial.begin(115200);
+  while (!Serial)
+  {
     ; // wait for serial port to connect. Needed for native USB port only
 
+    
+
   }
+  //(1 char(data) + 1 char (Time) )*8 +1 \n
+  inputString.reserve(17);
   // we'll use the initialization code from the utility libraries
   // since we're just testing if the card is working!
 if (!card.init(SPI_HALF_SPEED, CSPIN)) {
@@ -83,19 +98,55 @@ if (!card.init(SPI_HALF_SPEED, CSPIN)) {
    SD.begin(CSPIN);
     Malette.Initialize();
 
-
+ 
 
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  while(1)
+void loop()
+{
+      // print the string when a newline arrives:
+    if (stringComplete)
+    {
+      Serial.println(inputString);
+      AnalyseCommande(inputString);
+      // clear the string:
+      inputString = "";
+      stringComplete = false;
+    }
+
+}
+
+ISR(TIMER5_COMPA_vect)          // timer compare interrupt service routine
+{
+  Malette.Run();
+}
+
+
+
+/*
+  SerialEvent occurs whenever a new data comes in the
+ hardware serial RX.  This routine is run between each
+time loop() runs, so using delay inside loop can delay
+ response.  Multiple bytes of data may be available.
+ */
+void serialEvent() 
+{
+  while (Serial.available()) 
   {
-    //Malette.Run();
-    delay(DELAY_MS);
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+
+    // if the incoming character is a newline, set a flag
+    // so the main loop can do something about it:
+    if (inChar == '\n') 
+    {
+      stringComplete = true;
+    }
+    else
+    {
+          inputString += inChar;
+    }
+
   }
-
 }
-
-
-

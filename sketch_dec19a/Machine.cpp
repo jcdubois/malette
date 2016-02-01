@@ -1,13 +1,10 @@
- #include <Arduino.h>
-#include <SD.h>
-#define NBCARTE 32
- #define FILENAME "ALAIN.C"
+
 #include "Machine.h"
   char buff[3] = {0,0,0};
   
 Machine::Machine()
 {
-
+  m_nameFile = DEF;
   
 }
 Machine::~Machine()
@@ -23,29 +20,40 @@ bool Machine::Run()
   return true;
 }
 
+void Machine::ChangeFile(String file)
+{
+  
+     Serial.println(file);  
+  m_nameFile = file;
+    for(unsigned int i = 0 ; i < NBCARTE; i++)
+  {
+     m_Cartes[i].CloseFile(); 
+  }
+}
+
+
 bool Machine::Initialize()
 {
+    // list all files in the card with date and size
+
   for(unsigned int i = 0 ; i < NBCARTE; i++)
   {
-      String trace;
-      trace = "Initializing Card " ;
-     
-      
-     Serial.print(trace); 
      sprintf(buff,"%02d",i+1);
    
      m_Cartes[i].SetNumCarte(i+1);
-     String NameFile(buff);
-     NameFile = FILENAME + NameFile;
-     Serial.println(NameFile);  
-      if (SD.exists(NameFile) )
+     String NumFile(buff);
+     String file = m_nameFile + DOT + EXT + NumFile;
+          
+     Serial.println(file);  
+      if (SD.exists(file) )
       {
          Serial.println("Le fichier existe");
-         m_Cartes[i].LoadFile(NameFile);
+         m_Cartes[i].LoadFile(file);
       }
     else 
     {
-      Serial.println("Le fichier n'existe pas existe");
+      Serial.println("Le fichier n'existe pas");
+      return false;
     }
   }
 
