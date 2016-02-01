@@ -26,6 +26,7 @@ class Machine
     bool Run();
     bool Initialize();
   
+    bool GotoStep(unsigned int Step);
     void ChangeFile(String file);
 
     

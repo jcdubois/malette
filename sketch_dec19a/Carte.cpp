@@ -91,8 +91,18 @@ bool Carte::WriteData()
 
 bool Carte::SetStep(unsigned int  Step)
 {
-  //m_Step = (Step - 1)%m_nbStep;
-  //m_timeLeft = 0;
+   m_indexStep = Step%m_nbStep;
+   
+   ///Je recherche le NB de buffer à charger   
+   unsigned int Nbloadbuffer = m_indexStep/MAX_STEP_LOAD;
+
+  for (unsigned int i = 0 ;i < Nbloadbuffer ; i++)
+  {
+    LoadBuffer();
+  }
+  
+   //Je recherche la position de l'index dans le buffer à charger
+  m_BufferPosition  = m_indexStep%MAX_STEP_LOAD;
 
   return true;
     

@@ -20,6 +20,15 @@ bool Machine::Run()
   return true;
 }
 
+bool Machine::GotoStep(unsigned int Step)
+{
+  for(unsigned int i = 0 ; i < NBCARTE; i++)
+  {
+    m_Cartes[i].SetStep(Step);
+  }
+  return true;
+}
+
 void Machine::ChangeFile(String file)
 {
   

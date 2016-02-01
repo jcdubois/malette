@@ -8,11 +8,10 @@
 
 
 #define START 'S'
-#define STOP  'P'
+#define STOP  'B'
 #define RESET 'R'
-
 #define LOAD 'L'
-
+#define GOTO 'G'
 
 void AnalyseCommande(String inputString);
 

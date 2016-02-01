@@ -60,13 +60,52 @@ void AnalyseCommande(String inputString)
       TCCR5A = 0;
       TCCR5B = 0;
       TCNT5  = 0;
-      Serial.print("Change file Malette ");
+      Serial.println("Change file Malette ");
       Malette.ChangeFile(inputString);
       Malette.Initialize();
        interrupts(); 
       
       
   }
+
+  
+  if(inputString[0] == 'G')
+  {
+      inputString.remove(0,1);
+      inputString.remove(inputString.length()-1,1);
+
+      noInterrupts(); // disable all interrupts
+      TCCR5A = 0;
+      TCCR5B = 0;
+      TCNT5  = 0;
+       interrupts(); 
+       
+      Serial.println("Goto Step  ");
+      
+      
+  }
+
+  if(inputString[0] == 'G')
+  {
+      inputString.remove(0,1);
+      inputString.remove(inputString.length()-1,1);
+
+      noInterrupts(); // disable all interrupts
+      TCCR5A = 0;
+      TCCR5B = 0;
+      TCNT5  = 0;
+       interrupts(); 
+    
+      Malette.Initialize();
+      
+      Malette.GotoStep(inputString.toInt());
+      Serial.println("Goto Step  ");
+      
+      
+  }
+
+
+  
   
 }
 
