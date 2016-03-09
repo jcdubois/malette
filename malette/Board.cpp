@@ -22,6 +22,9 @@ bool Board::SetNum(unsigned char num) {
   m_num = num;
   m_decoder = (m_num - 1) / 8;
   m_channel = (m_num - 1) & 0x7;
+  m_value = 0;
+
+  WriteData();
 
   return true;
 }
