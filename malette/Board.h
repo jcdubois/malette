@@ -18,8 +18,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef CARTE_H
-#define CARTE_H
+#ifndef BOARD_H
+#define BOARD_H
 
 #include <Arduino.h>
 #include <SD.h>
@@ -77,4 +77,4 @@ private:
   bool ReadLine();
 };
 
-#endif // CARTE_H
+#endif // BOARD_H
