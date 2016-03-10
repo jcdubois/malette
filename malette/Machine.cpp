@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) 2016 Julien Viaud
  * Copyright (c) 2016 Jean-Christphe Dubois
@@ -18,6 +19,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <TimerOne.h>
 #include "Machine.h"
 
 #define DEF "DEFAULT"
@@ -26,32 +28,28 @@ Machine::Machine() { m_nameFile = DEF; }
 
 Machine::~Machine() {}
 
-bool Machine::Run() {
+void Machine::Run() {
   for (unsigned int i = 0; i < MAXBOARD; i++) {
     m_board[i].Execute();
   }
-
-  return true;
 }
 
-bool Machine::GotoStep(unsigned int Step) {
+void Machine::GotoStep(unsigned int Step) {
   for (unsigned int i = 0; i < MAXBOARD; i++) {
     m_board[i].SetStep(Step);
   }
-
-  return true;
 }
 
 void Machine::ChangeFile(String file) {
+  Serial.print("Changing file to ");
   Serial.println(file);
-
   m_nameFile = file;
   for (unsigned int i = 0; i < MAXBOARD; i++) {
     m_board[i].SetFile(file);
   }
 }
 
-bool Machine::Initialize() {
+void Machine::Initialize(void (*timer_isr)()) {
   // list all files in the card with date and size
   for (unsigned int i = 0; i < MAXBOARD; i++) {
     // Set the board number
@@ -60,5 +58,25 @@ bool Machine::Initialize() {
     m_board[i].SetFile(m_nameFile);
   }
 
-  return true;
+  Timer1.initialize(60000);
+  Timer1.attachInterrupt(timer_isr);
+  DisableTimer();
 }
+
+void Machine::Reset() {
+  for (unsigned int i = 0; i < MAXBOARD; i++) {
+    m_board[i].Reset();
+  }
+}
+
+void Machine::DisableTimer() {
+  Timer1.stop();
+  m_timerEnable = false;
+}
+
+void Machine::EnableTimer() {
+  Timer1.start();
+  m_timerEnable = true;
+}
+
+bool Machine::IsTimerEnabled() { return m_timerEnable; }

@@ -31,19 +31,21 @@ public:
   // Destructor
   ~Board();
 
-  bool SetNum(unsigned char num);
+  void Reset();
+
+  void SetNum(unsigned char num);
 
   // load a file associated to the board
-  bool SetFile(String path);
+  void SetFile(String path);
 
   // Called each time the timer is triggered
-  bool Execute();
+  void Execute();
 
   // Position the board to the desired time
-  bool SetStep(unsigned int time);
+  void SetStep(unsigned int time);
 
   // Close the file in use
-  bool CloseFile();
+  void CloseFile();
 
 private:
   File m_file;
@@ -70,11 +72,11 @@ private:
   // Total number of step
   unsigned short m_nbStep;
 
-  bool WriteData();
+  void WriteData();
 
-  bool ReadHeader();
+  void ReadHeader();
 
-  bool ReadLine();
+  void ReadLine();
 };
 
 #endif // BOARD_H

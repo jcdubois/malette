@@ -37,18 +37,16 @@ Board::Board() {
 
 Board::~Board() {}
 
-bool Board::SetNum(unsigned char num) {
+void Board::SetNum(unsigned char num) {
   m_num = num;
   m_decoder = (m_num - 1) / 8;
   m_channel = (m_num - 1) & 0x7;
   m_value = 0;
 
   WriteData();
-
-  return true;
 }
 
-bool Board::SetFile(String path) {
+void Board::SetFile(String path) {
   // Close the file if it is open
   CloseFile();
 
@@ -60,7 +58,7 @@ bool Board::SetFile(String path) {
     Serial.print("file ");
     Serial.print(file);
     Serial.println(" does not exist");
-    return false;
+    return;
   }
 
   // open the file related to this board
@@ -69,7 +67,7 @@ bool Board::SetFile(String path) {
   if (!m_file) {
     Serial.print("Can't opne file ");
     Serial.println(file);
-    return false;
+    return;
   }
 
   // Read the "header", i.e the number of steps in the file.
@@ -77,25 +75,21 @@ bool Board::SetFile(String path) {
 
   // Write the initial data (0) to the board
   WriteData();
-
-  return true;
 }
 
-bool Board::CloseFile() {
+void Board::CloseFile() {
   if (!m_file) {
-    return false;
+    return;
   }
 
   m_file.close();
-
-  return true;
 }
 
-bool Board::Execute() {
+void Board::Execute() {
   if (!m_file) {
-    Serial.print("No file configured for board ");
+    Serial.print("Board::Execute: No file configured for board ");
     Serial.println(m_num);
-    return false;
+    return;
   }
 
   m_timeLeft--;
@@ -104,22 +98,18 @@ bool Board::Execute() {
     ReadLine();
     WriteData();
   }
-
-  return true;
 }
 
-bool Board::WriteData() {
+void Board::WriteData() {
   // Write the data to the board address.
   Bus1.Write(m_decoder, m_channel, m_value);
-
-  return true;
 }
 
-bool Board::SetStep(unsigned int time) {
+void Board::SetStep(unsigned int time) {
   if (!m_file) {
-    Serial.print("No file configured for board ");
+    Serial.print("Board::SetStep: No file configured for board ");
     Serial.println(m_num);
-    return false;
+    return;
   }
 
   // We should seek the correct line
@@ -138,11 +128,9 @@ bool Board::SetStep(unsigned int time) {
   m_timeLeft -= time;
 
   WriteData();
-
-  return true;
 }
 
-bool Board::ReadLine() {
+void Board::ReadLine() {
   // Read one data line made of a binary value and a time value
   char ret;
 
@@ -174,11 +162,9 @@ bool Board::ReadLine() {
   if (!m_indexStep) {
     m_file.seek(m_dataposition);
   }
-
-  return true;
 }
 
-bool Board::ReadHeader() {
+void Board::ReadHeader() {
   char ret;
 
   // Read the number of steps in the file
@@ -200,11 +186,18 @@ bool Board::ReadHeader() {
   m_indexStep = 0;
   m_timeLeft = 0;
   m_value = 0;
+}
 
-  // m_nbStep should not be null
-  if (m_nbStep) {
-    return true;
-  } else {
-    return false;
+void Board::Reset() {
+  if (m_file) {
+    m_file.seek(m_dataposition);
   }
+
+  // Init to 0
+  m_indexStep = 0;
+  m_timeLeft = 0;
+  m_value = 0;
+
+  // Write the initial data (0) to the board
+  WriteData();
 }

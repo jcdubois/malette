@@ -32,15 +32,22 @@ public:
   Machine();
   ~Machine();
 
-  bool Run();
-  bool Initialize();
+  void Initialize(void (*timer_isr)());
 
-  bool GotoStep(unsigned int Step);
+  void Reset();
+  void Run();
+
+  void GotoStep(unsigned int Step);
   void ChangeFile(String file);
+
+  void DisableTimer();
+  void EnableTimer();
+  bool IsTimerEnabled();
 
 private:
   Board m_board[MAXBOARD];
   String m_nameFile;
+  bool m_timerEnable;
 };
 
 #endif // MACHINE_H

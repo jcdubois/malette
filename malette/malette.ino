@@ -29,18 +29,16 @@
 Sd2Card card;
 SdVolume volume;
 SdFile root;
-
-#define FREQ 16
-#define CSPIN 53
-
 Machine Malette;
 Bus Bus1;
 
-#define COUNTVALUE 62500 / FREQ
+#define CSPIN 53
 
-boolean stringComplete = false; // whether the string is complete
+static boolean stringComplete = false; // whether the string is complete
 
-String inputString = "";
+static String inputString = "";
+
+static void timer_isr() { Malette.Run(); }
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -118,9 +116,7 @@ void setup() {
 
   Bus1.Initialize();
 
-  Malette.Initialize();
-
-  Serial.println("Init done\n");
+  Malette.Initialize(timer_isr);
 }
 
 void loop() {
@@ -132,11 +128,6 @@ void loop() {
     inputString = "";
     stringComplete = false;
   }
-}
-
-ISR(TIMER5_COMPA_vect) // timer compare interrupt service routine
-{
-  Malette.Run();
 }
 
 /*
