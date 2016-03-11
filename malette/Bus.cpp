@@ -67,7 +67,7 @@ void Bus::Write(unsigned char decoder, unsigned char channel,
 
 void Bus::WriteAddress(unsigned char decoder, unsigned char channel) {
   // Set the 3 higher bits = channel
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 3; i++) {
     if (channel & (1 < i)) {
       digitalWrite(addressPins[i + 5], HIGH);
     }
@@ -83,7 +83,7 @@ void Bus::WriteAddress(unsigned char decoder, unsigned char channel) {
   delay(BUS_DELAY);
 
   // Clear the 3 higher bits = channel
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 3; i++) {
     digitalWrite(addressPins[i + 5], LOW);
   }
   delay(BUS_DELAY);
