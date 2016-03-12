@@ -65,7 +65,7 @@ void Board::SetFile(String path) {
   m_file = SD.open(file, FILE_READ);
 
   if (!m_file) {
-    Serial.print("Can't opne file ");
+    Serial.print("Can't open file ");
     Serial.println(file);
     return;
   }

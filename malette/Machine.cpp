@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) 2016 Julien Viaud
  * Copyright (c) 2016 Jean-Christphe Dubois
