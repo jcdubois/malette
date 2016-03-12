@@ -27,19 +27,31 @@ void AnalyseCommande(String inputString) {
   switch (inputString[0]) {
   case 's':
   case 'S': {
-    Serial.println("Start Malette");
-    Malette.EnableTimer();
+    if (!Malette.IsTimerEnabled()) {
+      Serial.println("Start Malette");
+      Malette.EnableTimer();
+    } else {
+      Serial.println("Timer is running");
+    }
   } break;
   case 'p':
   case 'P': {
-    Malette.DisableTimer();
-    Serial.println("Pause Malette");
+    if (Malette.IsTimerEnabled()) {
+      Malette.DisableTimer();
+      Serial.println("Pause Malette");
+    } else {
+      Serial.println("Timer is not running");
+    }
   } break;
   case 'r':
   case 'R': {
-    Malette.DisableTimer();
-    Serial.println("Reset Malette");
-    Malette.Reset();
+    if (Malette.IsTimerEnabled()) {
+      Malette.DisableTimer();
+      Serial.println("Reset Malette");
+      Malette.Reset();
+    } else {
+      Serial.println("Timer is not running");
+    }
   } break;
   case 'n':
   case 'N': {
@@ -52,23 +64,38 @@ void AnalyseCommande(String inputString) {
   } break;
   case 'l':
   case 'L': {
+    if (Malette.IsTimerEnabled()) {
+      Malette.DisableTimer();
+    }
     // Remove first char (L).
-    Malette.DisableTimer();
     inputString.remove(0, 1);
-    String tp = inputString;
     Serial.println("Change file Malette ");
     Malette.ChangeFile(inputString);
   } break;
   case 'g':
   case 'G': {
-    // Remove first char (G)
-    Malette.DisableTimer();
-    inputString.remove(0, 1);
-    Serial.print("Goto Step ");
-    Serial.println(inputString);
-    Malette.Reset();
-    Malette.GotoStep(inputString.toInt());
+    if (!Malette.IsTimerEnabled()) {
+      // Remove first char (G)
+      Malette.DisableTimer();
+      inputString.remove(0, 1);
+      Serial.print("Goto Step ");
+      Serial.println(inputString);
+      Malette.Reset();
+      Malette.GotoStep(inputString.toInt());
+    } else {
+      Serial.println("Timer is running");
+    }
   } break;
+  case 'h':
+  case 'H': {
+      Serial.println("L[FileName]: use [Filename.CXX] files as data file");
+      Serial.println("S          : Start (running the timer)");
+      Serial.println("P          : Pause");
+      Serial.println("N          : Next");
+      Serial.println("G[Time]    : Goto [Time]");
+      Serial.println("R          : Reset");
+      Serial.println("H          : Help");
+  }
   default:
     Serial.println("Unknown comand");
     break;
