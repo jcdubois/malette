@@ -37,6 +37,9 @@ private:
   // Set the address on the bus
   void WriteAddress(unsigned char decoder, unsigned char channel);
 
+  // Clear all address bits
+  void ClearAddress();
+
   // Set the data to the bus
   void WriteData(unsigned char data);
 };
