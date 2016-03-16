@@ -88,13 +88,13 @@ void AnalyseCommande(String inputString) {
   } break;
   case 'h':
   case 'H': {
-      Serial.println("L[FileName]: use [Filename.CXX] files as data file");
-      Serial.println("S          : Start (running the timer)");
-      Serial.println("P          : Pause");
-      Serial.println("N          : Next");
-      Serial.println("G[Time]    : Goto [Time]");
-      Serial.println("R          : Reset");
-      Serial.println("H          : Help");
+    Serial.println("L[FileName]: use [Filename.CXX] files as data file");
+    Serial.println("S          : Start (running the timer)");
+    Serial.println("P          : Pause");
+    Serial.println("N          : Next");
+    Serial.println("G[Time]    : Goto [Time]");
+    Serial.println("R          : Reset");
+    Serial.println("H          : Help");
   }
   default:
     Serial.println("Unknown comand");
