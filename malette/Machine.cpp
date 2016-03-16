@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) 2016 Julien Viaud
  * Copyright (c) 2016 Jean-Christphe Dubois
@@ -57,7 +58,7 @@ void Machine::Initialize(void (*timer_isr)()) {
     m_board[i].SetFile(m_nameFile);
   }
 
-  Timer1.initialize(60000);
+  Timer1.initialize(600);
   Timer1.attachInterrupt(timer_isr);
   DisableTimer();
 }
