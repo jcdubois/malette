@@ -21,10 +21,13 @@
 #include "Board.h"
 #include "Bus.h"
 
+#define DEBUG 0
+
 extern Bus Bus1;
 
 #define DOT '.'
-#define EXT 'C'
+#define EXT1 'C'
+#define EXT2 'X'
 
 /*
  * Board constructor
@@ -33,6 +36,7 @@ Board::Board() {
   m_num = 0;
   m_decoder = 0;
   m_channel = 0;
+  m_steps = 0;
 }
 
 Board::~Board() {}
@@ -50,9 +54,13 @@ void Board::SetFile(String path) {
   // Close the file if it is open
   CloseFile();
 
+  m_file_name = path;
+
+  MakeCache(path);
+
   char buff[3] = {0, 0, 0};
   sprintf(buff, "%02d", m_num);
-  String file = path + DOT + EXT + buff;
+  String file = path + DOT + EXT2 + buff;
 
   if (!SD.exists(file)) {
     Serial.print("file ");
@@ -70,11 +78,168 @@ void Board::SetFile(String path) {
     return;
   }
 
-  // Read the "header", i.e the number of steps in the file.
-  ReadHeader();
+  m_value = 0;
+
+  m_steps = m_file.available() / 3;
 
   // Write the initial data (0) to the board
   WriteData();
+}
+
+void Board::MakeCache(String path) {
+  String file_name;
+  char buff[3] = {0, 0, 0};
+  char ret;
+
+  sprintf(buff, "%02d", m_num);
+
+  file_name = path + DOT + EXT1 + buff;
+
+  if (!SD.exists(file_name)) {
+    Serial.print("file ");
+    Serial.print(file_name);
+    Serial.println(" does not exist");
+    return;
+  }
+
+  file_name = path + DOT + EXT2 + buff;
+
+  if (SD.exists(file_name)) {
+#if DEBUG
+    Serial.print("file ");
+    Serial.print(file_name);
+    Serial.println(" is present");
+#endif
+    return;
+  }
+
+  File cache_file = SD.open(file_name, FILE_WRITE);
+
+  if (!cache_file) {
+    Serial.print("Can't open file ");
+    Serial.println(file_name);
+    return;
+  }
+  
+#if DEBUG
+  Serial.print("Output file is ");
+  Serial.println(cache_file.name());
+#endif
+
+  file_name = path + DOT + EXT1 + buff;
+
+  // open the file related to this board
+  File input_file = SD.open(file_name, FILE_READ);
+
+  if (!input_file) {
+    Serial.print("Can't open file ");
+    Serial.println(file_name);
+    cache_file.close();
+    return;
+  }
+
+#if DEBUG
+  Serial.print("Input file is ");
+  Serial.println(input_file.name());
+#endif
+
+  // Read the number of steps in the input file
+  String snbStep;
+
+  do {
+    ret = input_file.read();
+    if (ret == -1) {
+      Serial.print("Board::MakeCache: Failed to read #steps in file ");
+      Serial.println(input_file.name());
+      goto fail;
+    } else if (ret != ' ') {
+      snbStep += String(ret);
+    }
+  } while (ret != '\n');
+
+  unsigned char value;
+
+  for (int j=0; j<snbStep.toInt(); j++) {
+    value = 0;
+
+    // Read the binary value
+    for (int i = 0; i < 8; i++) {
+      value = value << 1;
+      ret = input_file.read();
+      if (ret == -1) {
+        Serial.print("Board::MakeCache: Failed to read value on file ");
+        Serial.println(input_file.name());
+        goto fail;
+      } else if (ret == '1') {
+        value |= 0x1;
+      } else if (ret != '0') {
+        Serial.print("Board::MakeCache: value is not a binary value");
+        Serial.println(input_file.name());
+        goto fail;
+      }
+    }
+
+    m_value = value;
+
+    WriteData();
+    
+    String time_value;
+
+    // read time associated to value
+    do {
+      ret = input_file.read();
+      if (ret == -1) {
+        Serial.print("Board::MakeCache: Failed to read time on file ");
+        Serial.println(input_file.name());
+        goto fail;
+      } else if (ret != ' ') {
+        time_value += String(ret);
+      }
+    } while (ret != '\n');
+
+    int time = time_value.toInt();
+
+    /* We wrtie the value */
+    if (cache_file.write(value) == 0) {
+        Serial.print("Board::MakeCache: Failed to write to file ");
+        Serial.println(cache_file.name());
+    }
+    /* We write the upper time value */
+    value = (time >> 8) & 0xff;
+    if (cache_file.write(value) == 0) {
+        Serial.print("Board::MakeCache: Failed to write to file ");
+        Serial.println(cache_file.name());
+    }
+    /* We write the lower time value */
+    value = time & 0xff;
+    if (cache_file.write(value) == 0) {
+        Serial.print("Board::MakeCache: Failed to write to file ");
+        Serial.println(cache_file.name());
+    }
+  }
+
+fail:
+  input_file.close();
+  cache_file.close();
+}
+
+void Board::DeleteCache() {
+  char buff[3] = {0, 0, 0};
+  sprintf(buff, "%02d", m_num);
+  String file = m_file_name + DOT + EXT2 + buff;
+
+  if (!SD.exists(file)) {
+    Serial.print("file ");
+    Serial.print(file);
+    Serial.println(" does not exist");
+    return;
+  }
+
+  if (!SD.remove(file)) {
+    Serial.print("Cannot remove file ");
+    Serial.println(file);
+    return;
+  }
 }
 
 void Board::CloseFile() {
@@ -92,10 +257,14 @@ void Board::Execute() {
     return;
   }
 
+  if (m_steps == 0) {
+    return;
+  }
+
   m_timeLeft--;
 
   if (m_timeLeft <= 0) {
-    ReadLine();
+    ReadData();
     WriteData();
   }
 }
@@ -112,15 +281,19 @@ void Board::SetStep(unsigned int time) {
     return;
   }
 
+  if (m_steps == 0) {
+    return;
+  }
+
   // We should seek the correct line
   do {
     // Got to first data line
-    m_file.seek(m_dataposition);
+    m_file.seek(0);
     m_timeLeft = 0;
 
     do {
       time -= m_timeLeft;
-      ReadLine();
+      ReadData();
     } while (time > m_timeLeft);
 
   } while (time > m_timeLeft);
@@ -130,71 +303,53 @@ void Board::SetStep(unsigned int time) {
   WriteData();
 }
 
-void Board::ReadLine() {
+void Board::ReadData() {
+  int ret;
   // Read one data line made of a binary value and a time value
-  char ret;
-
-  m_value = 0;
-  // Read the binary value
-  for (unsigned int i = 0; i < 8; i++) {
-    m_value = m_value << 1;
-    ret = m_file.read();
-    if (ret == '1') {
-      m_value |= 0x1;
-    }
-  }
-
-  // Skip the space
   ret = m_file.read();
-
-  String sTimeStep;
-  do {
-    ret = m_file.read();
-    sTimeStep += String(ret);
-  } while (ret != '\n');
-
-  m_timeLeft = sTimeStep.toInt();
-
-  m_indexStep++;
-  m_indexStep %= m_nbStep;
+  if (ret == -1) {
+    Serial.print("Board::ReadData: Failed to read from file ");
+    Serial.println(m_file.name());
+  }
+  m_value = (unsigned char)ret;
+  ret = m_file.read();
+  if (ret == -1) {
+    Serial.print("Board::ReadData: Failed to read from file ");
+    Serial.println(m_file.name());
+  }
+  m_timeLeft = (unsigned char)ret;
+  m_timeLeft <<= 8;
+  ret = m_file.read();
+  if (ret == -1) {
+    Serial.print("Board::ReadData: Failed to read from file ");
+    Serial.println(m_file.name());
+  }
+  m_timeLeft |= (unsigned char)ret;
 
   // If we rolled over then seek the initial data position
-  if (!m_indexStep) {
-    m_file.seek(m_dataposition);
-  }
-}
-
-void Board::ReadHeader() {
-  char ret;
-
-  // Read the number of steps in the file
-  String snbStep;
-  do {
-    ret = m_file.read();
-    if (ret != ' ') {
-      snbStep += String(ret);
+  if (m_file.available() < 3) {
+    if (m_file.available() != 0) {
+      Serial.print("Board::ReadData: ");
+      Serial.print(m_file.available());
+      Serial.print(" bytes left in file ");
+      Serial.println(m_file.name());
     }
-  } while (ret != '\n');
-
-  // Save the value
-  m_nbStep = snbStep.toInt();
-
-  // Save the beginning of the "data" part.
-  m_dataposition = m_file.position();
-
-  // Init to 0
-  m_indexStep = 0;
-  m_timeLeft = 0;
-  m_value = 0;
+    if (!m_file.seek(0)) {
+      Serial.print("Board::ReadData: Failed to seek start of file ");
+      Serial.println(m_file.name());
+    }
+  }
 }
 
 void Board::Reset() {
   if (m_file) {
-    m_file.seek(m_dataposition);
+    if (!m_file.seek(0)) {
+      Serial.print("Board::Reset: Failed to seek start of file ");
+      Serial.println(m_file.name());
+    }
   }
 
   // Init to 0
-  m_indexStep = 0;
   m_timeLeft = 0;
   m_value = 0;
 

@@ -21,7 +21,7 @@
 #include "Bus.h"
 #include <Arduino.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define NB_SEL 4
 #define NB_DEMUX_INPUTS 3

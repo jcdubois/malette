@@ -86,6 +86,15 @@ void AnalyseCommande(String inputString) {
       Serial.println("Timer is running");
     }
   } break;
+  case 'c':
+  case 'C': {
+    if (!Malette.IsTimerEnabled()) {
+      Serial.println("Remove Cache files");
+      Malette.DeleteCache();
+    } else {
+      Serial.println("Timer is running");
+    }
+  } break;
   case 'h':
   case 'H': {
     Serial.println("L[FileName]: use [Filename.CXX] files as data file");
@@ -94,6 +103,7 @@ void AnalyseCommande(String inputString) {
     Serial.println("N          : Next");
     Serial.println("G[Time]    : Goto [Time]");
     Serial.println("R          : Reset");
+    Serial.println("C          : Remove all cache files");
     Serial.println("H          : Help");
   }
   default:

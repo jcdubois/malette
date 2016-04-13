@@ -25,6 +25,8 @@
 #include "Commande.h"
 #include "Bus.h"
 
+#define DEBUG 0
+
 // set up variables using the SD utility library functions:
 Sd2Card card;
 SdVolume volume;
@@ -52,7 +54,7 @@ void setup() {
 
   // we'll use the initialization code from the utility libraries
   // since we're just testing if the card is working!
-  if (!card.init(SPI_HALF_SPEED, CSPIN)) {
+  if (!card.init(SPI_FULL_SPEED, CSPIN)) {
     Serial.println("initialization failed. Things to check:");
     Serial.println("* is a card inserted?");
     Serial.println("* is your wiring correct?");
@@ -60,9 +62,12 @@ void setup() {
                    "your shield or module?");
     return;
   } else {
+#if DEBUG
     Serial.println("Wiring is correct and a card is present.");
+#endif
   }
 
+#if DEBUG
   // print the type of card
   Serial.print("\nCard type: ");
   switch (card.type()) {
@@ -79,6 +84,7 @@ void setup() {
     Serial.println("Unknown");
     break;
   }
+#endif
 
   // Now we will try to open the 'volume'/'partition' - it should be FAT16 or
   // FAT32
@@ -88,6 +94,8 @@ void setup() {
     return;
   }
 
+
+#if DEBUG
   // print the type and size of the first FAT-type volume
   uint32_t volumesize;
   Serial.print("\nVolume type is FAT");
@@ -107,16 +115,29 @@ void setup() {
   Serial.println(volumesize);
 
   Serial.println("\nFiles found on the card (name, date and size in bytes): ");
+#endif
+
   root.openRoot(volume);
 
+#if DEBUG
   // list all files in the card with date and size
   root.ls(LS_R | LS_DATE | LS_SIZE);
+#endif
 
   SD.begin(CSPIN);
 
   Bus1.Initialize();
 
+  Serial.println("Initializing the Malette");
+
   Malette.Initialize(timer_isr);
+
+  Serial.println("Malette is ready to run");
+
+  Malette.EnableTimer();
+
+  Serial.println("Malette is running");
+
 }
 
 void loop() {

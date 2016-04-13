@@ -50,8 +50,11 @@ void Machine::ChangeFile(String file) {
 }
 
 void Machine::Initialize(void (*timer_isr)()) {
+  Reset();
   // list all files in the card with date and size
   for (unsigned int i = 0; i < MAXBOARD; i++) {
+    Serial.print("Initializing board ");
+    Serial.println(i+1);
     // Set the board number
     m_board[i].SetNum(i + 1);
     // Set the file associated to the board
@@ -66,6 +69,12 @@ void Machine::Initialize(void (*timer_isr)()) {
 void Machine::Reset() {
   for (unsigned int i = 0; i < MAXBOARD; i++) {
     m_board[i].Reset();
+  }
+}
+
+void Machine::DeleteCache() {
+  for (unsigned int i = 0; i < MAXBOARD; i++) {
+    m_board[i].DeleteCache();
   }
 }
 

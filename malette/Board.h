@@ -44,10 +44,14 @@ public:
   // Position the board to the desired time
   void SetStep(unsigned int time);
 
+  // Delete current cache file
+  void DeleteCache();
+
   // Close the file in use
   void CloseFile();
 
 private:
+  String m_file_name;
   File m_file;
 
   // card number (between 1 and 32)
@@ -57,26 +61,18 @@ private:
   // Channel number (between 0 and 7)
   unsigned char m_channel;
 
+  // Number of steps in the file
+  unsigned int m_steps;
   // current value for output
   unsigned char m_value;
-
-  // Current step
-  unsigned int m_indexStep;
-
-  // Position of the first data line
-  unsigned int m_dataposition;
-
   // Time left in current step
   int m_timeLeft;
 
-  // Total number of step
-  unsigned short m_nbStep;
-
   void WriteData();
 
-  void ReadHeader();
+  void MakeCache(String path);
 
-  void ReadLine();
+  void ReadData();
 };
 
 #endif // BOARD_H

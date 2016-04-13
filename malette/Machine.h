@@ -39,6 +39,7 @@ public:
 
   void GotoStep(unsigned int Step);
   void ChangeFile(String file);
+  void DeleteCache();
 
   void DisableTimer();
   void EnableTimer();
